@@ -1,0 +1,31 @@
+<div class="col-md-12">
+	<table class="table table-striped">
+		<tr>
+			<th>Member Name</th>
+			<th>Card Number</th>
+			<th>Active?</th>
+			<td></td>
+		</tr>
+		<tr ng-repeat="user in users">
+			<td>{{user.memberName}}:{{user._id}}</td>
+			<td>{{user.cardNumber}}</td>
+			<td>{{user.active}}</td>
+			<td><button class="btn btn-default" ng-click="loadUser(user)">Edit</button>&nbsp;<button class="btn btn-danger btn-small" ng-click="removeUser(user._id)">&times;</button></td>
+		</tr>
+	</table>
+</div>
+
+<form>
+	<div class="row col-md-7">
+		<input type="text" class="form-control" placeholder="Name" ng-model="formData.memberName"/>
+	</div>
+	<div class="row col-md-7">
+		<input type="text" class="form-control" placeholder="Card Number" ng-model="formData.cardNumber"/>
+	</div>
+	<div class="row col-md-7">
+		<label for="active">Active</label> &nbsp;<input type="checkbox" name="active" class="" ng-model="formData.active"/>
+	</div>
+	<div class="row col-md-7">
+		<button type="submit" ng-click="saveUser()">Save</button>
+	</div>
+</form>
