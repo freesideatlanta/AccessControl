@@ -1,1 +1,4 @@
 node_modules
+public/bower_components/angular
+public/bower_components/jquery
+public/bower_components/jquery-ui

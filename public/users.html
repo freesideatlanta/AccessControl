@@ -26,6 +26,23 @@
 		<label for="active">Active</label> &nbsp;<input type="checkbox" name="active" class="" ng-model="formData.active"/>
 	</div>
 	<div class="row col-md-7">
+		<label for="active">Access</label>
+		<div>		
+			<div class="col-md-6 panel panel-default">
+				<div class="panel-heading">Allowed</div>
+				<div class="panel-body" id="allowedList" data-drop="true" jqyoui-droppable="{onDrop: 'accessDrag()'}" ng-model="formData.allowedLocations">
+					<div class="btn btn-default col-md-12" ng-repeat="location in formData.allowedLocations track by $index" data-drag="true" jqyoui-draggable="{index: {{$index}}}" ng-model="formData.allowedLocations">{{location.locationName}}</div>
+				</div>
+			</div>
+			<div class="col-md-6 panel panel-default">
+				<div class="panel-heading">Disallowed</div>
+				<div class="panel-body" id="disallowedList" data-drop="true" jqyoui-droppable="{onDrop: 'accessDrag()'}" ng-model="formData.disallowedLocations">
+					<div class="btn btn-default col-md-12" ng-repeat="location in formData.disallowedLocations track by $index" data-drag="true" jqyoui-draggable="{index: {{$index}}}" ng-model="formData.disallowedLocations">{{location.locationName}}</div><br>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row col-md-7">
 		<button type="submit" ng-click="saveUser()">Save</button>
 	</div>
 </form>

@@ -3,7 +3,7 @@
     // set up ========================
     var express  = require('express');
     var app      = express();                               // create our app w/ express
-    var mongoose = require('mongoose');                     // mongoose for mongodb
+    var mongoose = require('mongoose'), Schema = mongoose.Schema;                     // mongoose for mongodb
     var morgan = require('morgan');             // log requests to the console (express4)
     var bodyParser = require('body-parser');    // pull information from HTML POST (express4)
     var methodOverride = require('method-override'); // simulate DELETE and PUT (express4)
@@ -19,20 +19,21 @@
     app.use(bodyParser.json({ type: 'application/vnd.api+json' })); // parse application/vnd.api+json as json
     app.use(methodOverride());
 
-    var User = mongoose.model('User', {
-	    memberName: String,
-	    cardNumber: String,
-		active: Boolean,
-		access: {
-			locationId: String,
-			accessString: String //crontab style entry
-		}
-    });
-	
-	var Location = mongoose.model('Location', {
+	var locationSchema = new Schema({
 		locationId: String,
 		locationName: String
 	});
+	
+	var userSchema = new Schema({
+	    memberName: String,
+	    cardNumber: String,
+		active: Boolean,
+		allowedLocations: [locationSchema]
+    });
+	
+    var User = mongoose.model('User', userSchema);
+		
+	var Location = mongoose.model('Location', locationSchema);
 
 // routes ======================================================================
 
@@ -82,10 +83,15 @@
     app.post('/api/users', function(req, res) {
 
         // create a todo, information comes from AJAX request from Angular
-		var postedUser = new User();
+		var postedUser = new User(req.body);
+			console.log(req.body);
+			postedUser.populate('allowedLocations');
+			console.log(postedUser);
+			/*
 			postedUser.memberName = req.body.memberName;
 			postedUser.cardNumber = req.body.cardNumber;
 			postedUser.active = req.body.active;
+			*/
 			
 		var insertUpdateCallback = function(err, user) {
 			if (err)
@@ -116,6 +122,7 @@
 		var postedLocation = new Location();
 			postedLocation.locationId = req.body.locationId;
 			postedLocation.locationName = req.body.locationName;
+		console.log(postedLocation);
 			
 		var createCallback = function(err, todo) {
             if (err)
@@ -133,7 +140,7 @@
 			var query = {_id:req.body._id};
 			Location.update(query, postedLocationObject, {upsert:true}, createCallback);
 		} else {
-			Location.create(postedLocationObject.toObject(), createCallback);
+			Location.create(postedLocation.toObject(), createCallback);
 		}
 
     });
@@ -157,9 +164,37 @@
 	
 	// delete a location
     app.delete('/api/locations/:location_id', function(req, res) {
+		//if a location is deleted, user records must be updated
+		//example query to find user records
+		//db.users.find({allowedLocations: { $elemMatch: { locationId: 'location1'}}})
+		Location.findOne({_id: req.params.location_id}, function(err, location) {
+			console.log(location.locationId);
+			User.find({}).where('allowedLocations').elemMatch({locationId: location.locationId})
+			.exec(function(err, users) {
+				for (var u = 0; u < users.length; u++) {
+					var user = users[u];
+					var newAllowedLocations = [];
+					for (var l = 0; l < user.allowedLocations.length; l++) {
+						if (user.allowedLocations[l].locationId != location.locationId) {
+							newAllowedLocations.push(user.allowedLocations[l]);
+						}
+					}
+					console.log('before');
+					console.log(user.allowedLocations);
+					console.log('after');
+					console.log(newAllowedLocations);
+					
+					user.allowedLocations = newAllowedLocations;
+					var userObject = user.toObject();
+					delete userObject._id;
+					User.update({_id: user._id}, userObject, {upsert:true}, function(){});
+				}
+			});
+		});
+		
         Location.remove({
             _id : req.params.location_id
-        }, function(err, user) {
+        }, function(err) {
             if (err)
                 res.send(err);
 
