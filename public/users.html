@@ -1,5 +1,5 @@
 <div class="col-md-12">
-	<table class="table table-striped">
+	<table class="table table-striped" style="border: 1px solid #999;">
 		<tr>
 			<th>Member Name</th>
 			<th>Card Number</th>
@@ -12,37 +12,9 @@
 			<td>{{user.active}}</td>
 			<td><button class="btn btn-default" ng-click="loadUser(user)">Edit</button>&nbsp;<button class="btn btn-danger btn-small" ng-click="removeUser(user._id)">&times;</button></td>
 		</tr>
+		<tr>
+			<td colspan="3"><button class="btn btn-success" ng-click="addUser()"><i class="glyphicon glyphicon-plus"></i>&nbsp;Add User</button></td>
+			<td>&nbsp;</td>
+		</tr>
 	</table>
 </div>
-
-<form>
-	<div class="row col-md-7">
-		<input type="text" class="form-control" placeholder="Name" ng-model="formData.memberName"/>
-	</div>
-	<div class="row col-md-7">
-		<input type="text" class="form-control" placeholder="Card Number" ng-model="formData.cardNumber"/>
-	</div>
-	<div class="row col-md-7">
-		<label for="active">Active</label> &nbsp;<input type="checkbox" name="active" class="" ng-model="formData.active"/>
-	</div>
-	<div class="row col-md-7">
-		<label for="active">Access</label>
-		<div>		
-			<div class="col-md-6 panel panel-default">
-				<div class="panel-heading">Allowed</div>
-				<div class="panel-body" id="allowedList" data-drop="true" jqyoui-droppable="{onDrop: 'accessDrag()'}" ng-model="formData.allowedLocations">
-					<div class="btn btn-default col-md-12" ng-repeat="location in formData.allowedLocations track by $index" data-drag="true" jqyoui-draggable="{index: {{$index}}}" ng-model="formData.allowedLocations">{{location.locationName}}</div>
-				</div>
-			</div>
-			<div class="col-md-6 panel panel-default">
-				<div class="panel-heading">Disallowed</div>
-				<div class="panel-body" id="disallowedList" data-drop="true" jqyoui-droppable="{onDrop: 'accessDrag()'}" ng-model="formData.disallowedLocations">
-					<div class="btn btn-default col-md-12" ng-repeat="location in formData.disallowedLocations track by $index" data-drag="true" jqyoui-draggable="{index: {{$index}}}" ng-model="formData.disallowedLocations">{{location.locationName}}</div><br>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="row col-md-7">
-		<button type="submit" ng-click="saveUser()">Save</button>
-	</div>
-</form>

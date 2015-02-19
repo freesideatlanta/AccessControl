@@ -1,4 +1,12 @@
-var accessControl = angular.module('freesideAccessControl', ['ngRoute','ngDragDrop']);
+var User = function() {
+	this.memberName = null;
+	this.cardNumber = null;
+	this.active = false;
+	this.allowedLocations = [];
+	this.disallowedLocations = [];
+};
+
+var accessControl = angular.module('freesideAccessControl', ['ngRoute','ngDragDrop','ui.bootstrap']);
 
 accessControl.config([ '$routeProvider', 
 	function($routeProvider) {
@@ -17,7 +25,7 @@ accessControl.config([ '$routeProvider',
 	}
 ]);
 
-accessControl.controller('userController', function(userService, locationService, $scope, $http) {
+accessControl.controller('userController', function(userService, locationService, $scope, $http, $modal) {
 	$scope.formData = {};
 
 	$scope.init = function() {
@@ -33,10 +41,10 @@ accessControl.controller('userController', function(userService, locationService
 	
 	$scope.init();
 		
-	$scope.saveUser = function() {
-		$http.post('/api/users', $scope.formData)
+	$scope.saveUser = function(user) {
+		console.log(user);
+		$http.post('/api/users', user)
             .success(function(data) {
-                $scope.formData = {}; // clear the form so our user is ready to enter another
                 $scope.users = data;
                 console.log(data);
             })
@@ -55,16 +63,42 @@ accessControl.controller('userController', function(userService, locationService
 			});
 	}
 	
+	
+	
+	$scope.addUser = function() {
+		console.log("adding user");
+		$scope.formData = {};
+		var locationList = $scope.locations.slice();
+		$scope.formData.disallowedLocations = locationList;
+		
+		$scope.modalInstance = $modal.open({
+			templateUrl: '/templates/userModal.html',
+			backdrop: 'static',
+			controller: 'userModalController',
+			resolve: {
+				locations: function() {
+					return $scope.locations;
+				},
+				user: function() { 
+					var user = new User();
+					user.disallowedLocations = $scope.locations;
+					return user;
+				},
+				saveCallback: function() {return $scope.saveUser;}
+			},
+			keyboard: false
+		});
+	};
+	
 	$scope.loadUser = function(user) {
 		console.log(user);
-		//do something here for the locations/
 		if (!user.allowedLocations) {
 			user.allowedLocations = [];
 		}
-		$scope.formData = user;
+		
 		var locationList = $scope.locations.slice();
-		$scope.formData.disallowedLocations = [];
-		//console.log(user.allowedLocations);
+		user.disallowedLocations = [];
+
 		var allowedIdArray = [];
 		for (var i = 0; i < user.allowedLocations.length; i++) {
 			allowedIdArray[i] = user.allowedLocations[i].locationId;
@@ -72,24 +106,44 @@ accessControl.controller('userController', function(userService, locationService
 		for (var i = 0; i < locationList.length; i++) {
 			var foundIndex = allowedIdArray.indexOf(locationList[i].locationId);
 			if (foundIndex < 0) {
-				$scope.formData.disallowedLocations.push(locationList[i]);
+				user.disallowedLocations.push(locationList[i]);
 			}
 		}
+		
+		$scope.modalInstance = $modal.open({
+			templateUrl: 'userModal.html',
+			backdrop: 'static',
+			controller: 'userModalController',
+			resolve: {
+				locations: function() {
+					return $scope.locations;
+				},
+				user: function() { return jQuery.extend(true, {}, user);},
+				saveCallback: function() { return $scope.saveUser}
+			},
+			keyboard: false
+		});
+	};
+});
+
+accessControl.controller('userModalController', function($scope, $http, $modalInstance, locations, user, saveCallback) {
+	
+	$scope.init = function() {
+		$scope.user = user;
 	};
 	
-	$scope.accessDrag = function(event) {
-	/*
-		if (event.target.id == 'allowedList') {
-			var locationIndex = eval('(' + event.toElement.attributes[3].value + ')').index;
-			$scope.formData.allowedLocations.push($scope.formData.disallowedLocations[locationIndex]);
-			$scope.formData.disallowedLocations.splice(locationIndex, 1);
-		} else if (event.target.id == 'disallowedList') {
-			var locationIndex = eval('(' + event.toElement.attributes[3].value + ')').index;
-			$scope.formData.disallowedLocations.push($scope.formData.allowedLocations[locationIndex]);
-			$scope.formData.allowedLocations.splice(locationIndex,1);
-		}
-		*/
-	};
+	$scope.init();
+	
+	$scope.saveUser = function() {
+		saveCallback($scope.user);
+		$scope.cancelUserModal();
+	}
+
+	$scope.cancelUserModal = function() {
+		console.log("cancelled");
+		$scope.user = {};
+		$modalInstance.dismiss('close')
+	}
 });
 
 accessControl.factory('userService', function($http, $q) {
