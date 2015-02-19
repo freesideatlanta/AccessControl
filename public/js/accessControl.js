@@ -6,6 +6,11 @@ var User = function() {
 	this.disallowedLocations = [];
 };
 
+var Location = function() {
+	this.locationId = null;
+	this.locationName = null;
+};
+
 var accessControl = angular.module('freesideAccessControl', ['ngRoute','ngDragDrop','ui.bootstrap']);
 
 accessControl.config([ '$routeProvider', 
@@ -67,27 +72,8 @@ accessControl.controller('userController', function(userService, locationService
 	
 	$scope.addUser = function() {
 		console.log("adding user");
-		$scope.formData = {};
-		var locationList = $scope.locations.slice();
-		$scope.formData.disallowedLocations = locationList;
 		
-		$scope.modalInstance = $modal.open({
-			templateUrl: '/templates/userModal.html',
-			backdrop: 'static',
-			controller: 'userModalController',
-			resolve: {
-				locations: function() {
-					return $scope.locations;
-				},
-				user: function() { 
-					var user = new User();
-					user.disallowedLocations = $scope.locations;
-					return user;
-				},
-				saveCallback: function() {return $scope.saveUser;}
-			},
-			keyboard: false
-		});
+		$scope.loadUser(new User());
 	};
 	
 	$scope.loadUser = function(user) {
@@ -111,7 +97,7 @@ accessControl.controller('userController', function(userService, locationService
 		}
 		
 		$scope.modalInstance = $modal.open({
-			templateUrl: 'userModal.html',
+			templateUrl: 'templates/userModal.html',
 			backdrop: 'static',
 			controller: 'userModalController',
 			resolve: {
@@ -126,7 +112,7 @@ accessControl.controller('userController', function(userService, locationService
 	};
 });
 
-accessControl.controller('userModalController', function($scope, $http, $modalInstance, locations, user, saveCallback) {
+accessControl.controller('userModalController', function($scope, $modalInstance, locations, user, saveCallback) {
 	
 	$scope.init = function() {
 		$scope.user = user;
@@ -144,6 +130,25 @@ accessControl.controller('userModalController', function($scope, $http, $modalIn
 		$scope.user = {};
 		$modalInstance.dismiss('close')
 	}
+});
+
+accessControl.controller('locationModalController', function($scope, $modalInstance, location, saveCallback) {
+	
+	$scope.init = function() {
+		$scope.location = location;
+	};
+	
+	$scope.saveLocation = function() {
+		saveCallback($scope.location);
+		$scope.cancelLocationModal();
+	};
+	
+	$scope.cancelLocationModal = function() {
+		$scope.location = {};
+		$modalInstance.dismiss('close');
+	};
+	
+	$scope.init();
 });
 
 accessControl.factory('userService', function($http, $q) {
@@ -180,7 +185,7 @@ accessControl.factory('locationService', function($http, $q) {
 	return locationService;
 });
 
-accessControl.controller('locationController', function(locationService, $scope, $http) {
+accessControl.controller('locationController', function(locationService, $scope, $http, $modal) {
 	$scope.formData = {};
 	
 	$scope.initLocations = function() {
@@ -191,10 +196,9 @@ accessControl.controller('locationController', function(locationService, $scope,
 
 	$scope.initLocations();
 		
-	$scope.saveLocation = function() {
-		$http.post('/api/locations', $scope.formData)
+	$scope.saveLocation = function(location) {
+		$http.post('/api/locations', location)
             .success(function(data) {
-                $scope.formData = {}; // clear the form so our user is ready to enter another
                 $scope.locations = data;
                 console.log(data);
             })
@@ -213,7 +217,23 @@ accessControl.controller('locationController', function(locationService, $scope,
 			});
 	};
 	
+	$scope.addLocation = function() {
+		$scope.loadLocation(new Location());
+	};
+	
 	$scope.loadLocation = function(location) {
-		$scope.formData = location;
+		
+		$scope.modalInstance = $modal.open({
+			templateUrl: 'templates/locationModal.html',
+			backdrop: 'static',
+			controller: 'locationModalController',
+			resolve: {
+				location: function() {
+					return new jQuery.extend(true, {}, location);
+				},
+				saveCallback: function() { return $scope.saveLocation}
+			},
+			keyboard: false
+		});
 	};
 });

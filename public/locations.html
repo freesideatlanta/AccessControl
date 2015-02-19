@@ -1,5 +1,5 @@
 <div class="col-md-12">
-	<table class="table table-striped">
+	<table class="table table-striped" style="border: 1px solid #999;">
 		<tr>
 			<th>Location Id</th>
 			<th>Location Name</th>
@@ -10,17 +10,8 @@
 			<td>{{location.locationName}}</td>
 			<td><button class="btn btn-default" ng-click="loadLocation(location)">Edit</button>&nbsp;<button class="btn btn-danger btn-small" ng-click="removeLocation(location._id)">&times;</button></td>
 		</tr>
+		<tr>
+			<td colspan="4"><button type="button" class="btn btn-success" ng-click="addLocation()"><i class="glyphicon glyphicon-plus"></i>&nbsp; Add Location</button></td>
+		</tr>
 	</table>
 </div>
-
-<form>
-	<div class="row col-md-7">
-		<input type="text" class="form-control" placeholder="Location Id" ng-model="formData.locationId"/>
-	</div>
-	<div class="row col-md-7">
-		<input type="text" class="form-control" placeholder="Location Name" ng-model="formData.locationName"/>
-	</div>
-	<div class="row col-md-7">
-		<button type="submit" ng-click="saveLocation()">Save</button>
-	</div>
-</form>

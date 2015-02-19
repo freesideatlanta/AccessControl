@@ -118,7 +118,7 @@
     });
 	
 	app.post('/api/locations', function(req, res) {
-
+	
 		var postedLocation = new Location();
 			postedLocation.locationId = req.body.locationId;
 			postedLocation.locationName = req.body.locationName;
