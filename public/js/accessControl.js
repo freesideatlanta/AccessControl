@@ -22,7 +22,9 @@ angular.module('freesideAccessControl', [
 	'app.user.controllers',
 	'app.location.controllers',
 	'app.user.services',
-	'app.location.services'
+	'app.location.services',
+	'app.logging.controllers',
+	'app.logging.services'
 	])
 	.config([ '$routeProvider', 
 	function($routeProvider) {
@@ -34,6 +36,10 @@ angular.module('freesideAccessControl', [
 			.when('/locations', {
 				templateUrl: '/locations.html',
 				controller: 'locationController'
+			})
+			.when('/logging', {
+				templateUrl: '/logging.html',
+				controller: 'loggingController'
 			})
 			.otherwise({ 
 				redirectTo: '/users' 
