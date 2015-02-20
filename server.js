@@ -21,7 +21,11 @@
 
 	var locationSchema = new Schema({
 		locationId: String,
-		locationName: String
+		locationName: String,
+		days: [{
+			dayName: String,
+			cronString: String
+		}]
 	});
 	
 	var userSchema = new Schema({

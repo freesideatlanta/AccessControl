@@ -10,6 +10,11 @@ var Location = function() {
 	this.locationId = null;
 	this.locationName = null;
 };
+
+var LocationAccess = function(dayName) {
+	this.dayName = dayName;
+	this.cronString = '';
+}
 angular.module('freesideAccessControl', [
 	'ngRoute',
 	'ngDragDrop',

@@ -80,25 +80,84 @@ angular.module('app.user.controllers', [])
 			});
 		};
 	})
-	.controller('userModalController', function($scope, $modalInstance, locations, user, saveCallback) {
+	.controller('userModalController', function($scope, $modalInstance, $modal, $q, locations, user, saveCallback) {
 	
-	$scope.init = function() {
-		$scope.user = user;
-	};
-	
-	$scope.init();
-	
-	$scope.saveUser = function() {
-		saveCallback($scope.user);
-		$scope.cancelUserModal();
-	}
+		$scope.init = function() {
+			$scope.user = user;
+		};
+		
+		$scope.init();
+		
+		$scope.saveUser = function() {
+			saveCallback($scope.user);
+			$scope.cancelUserModal();
+		}
 
-	$scope.cancelUserModal = function() {
-		console.log("cancelled");
-		$scope.user = {};
-		$modalInstance.dismiss('close')
-	}
-});
+		$scope.cancelUserModal = function() {
+			console.log("cancelled");
+			$scope.user = {};
+			$modalInstance.dismiss('close')
+		}
+		
+		$scope.openTimeModal = function(location) {
+			$scope.modalInstance = $modal.open({
+				templateUrl: 'templates/timeModal.html',
+				backdrop: 'static',
+				controller: 'timeModalController',
+				resolve: {
+					location: function() { return location; },
+					user: function() { return user; }
+				},
+				keyboard: false
+			});
+		};
+		
+		$scope.drag = function(event) {
+			event.preventDefault();
+		}
+		
+		$scope.clearAccessList = function(event) {
+			var index = eval('(' + event.toElement.attributes['jqyoui-draggable'].value + ')').index;
+			console.log(index);
+			console.log(user.disallowedLocations[index].days);
+			user.disallowedLocations[index].days = null;
+			console.log(user.disallowedLocations[index].days);
+		}
+	})
+	.controller('timeModalController', function($scope, $modalInstance, location, user) {
+		
+		$scope.init = function() {
+			
+			$scope.locationName = location.locationName;
+			console.log(location.days);
+			if (location.days == null || location.days.length == 0) {
+				var sun = new LocationAccess('Sunday');
+				var mon = new LocationAccess('Monday');
+				var tue = new LocationAccess('Tuesday');
+				var wed = new LocationAccess('Wednesday');
+				var thr = new LocationAccess('Thursday');
+				var fri = new LocationAccess('Friday');
+				var sat = new LocationAccess('Saturday');
+				
+				location.days = [sun, mon, tue, wed, thr, fri, sat];
+			}
+			$scope.location = location;
+		};
+		
+		$scope.init();
+		
+		$scope.setCronString = function(day, string) {
+			day.cronString = string;
+		};
+		
+		$scope.cancelTimeModal = function() {
+			$modalInstance.dismiss('cancel');
+		}
+		
+		$scope.saveTimes = function() {
+			console.log(location.days);
+		}
+	});
 
 angular.module('app.user.services', [])
 	.factory('userService', function($http, $q) {
