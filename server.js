@@ -3,22 +3,29 @@
     // set up ========================
     var express  = require('express');
 	require('date-utils');
-    var app      = express();                               // create our app w/ express
-    var mongoose = require('mongoose'), Schema = mongoose.Schema;                     // mongoose for mongodb
-    var morgan = require('morgan');             // log requests to the console (express4)
-    var bodyParser = require('body-parser');    // pull information from HTML POST (express4)
-    var methodOverride = require('method-override'); // simulate DELETE and PUT (express4)
+    var app      = express();
+    var mongoose = require('mongoose'), Schema = mongoose.Schema;
+    var morgan = require('morgan');
+    var bodyParser = require('body-parser');
+    var methodOverride = require('method-override');
 
     // configuration =================
 
-    mongoose.connect('mongodb://localhost/accessControl');
+    var acDB = mongoose.createConnection('mongodb://localhost/accessControl');
+	var logDB = mongoose.createConnection('mongodb://localhost/accessLogging');
 
-    app.use(express.static(__dirname + '/public'));                 // set the static files location /public/img will be /img for users
-    app.use(morgan('dev'));                                         // log every request to the console
-    app.use(bodyParser.urlencoded({'extended':'true'}));            // parse application/x-www-form-urlencoded
-    app.use(bodyParser.json());                                     // parse application/json
-    app.use(bodyParser.json({ type: 'application/vnd.api+json' })); // parse application/vnd.api+json as json
+    app.use(express.static(__dirname + '/public'));
+    app.use(morgan('dev'));
+    app.use(bodyParser.urlencoded({'extended':'true'}));
+    app.use(bodyParser.json());
+    app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
     app.use(methodOverride());
+	
+	var LogMessage = logDB.model('LogMessage', {
+		message: String,
+		timestamp: Date,
+		isFailed: Boolean
+	});
 
 	var locationSchema = new Schema({
 		locationId: String,
@@ -36,9 +43,9 @@
 		allowedLocations: [locationSchema]
     });
 	
-    var User = mongoose.model('User', userSchema);
+    var User = acDB.model('User', userSchema);
 		
-	var Location = mongoose.model('Location', locationSchema);
+	var Location = acDB.model('Location', locationSchema);
 
 // routes ======================================================================
 
@@ -54,6 +61,13 @@
             res.json(users); // return all users in JSON format
         });
     });
+	
+	var logMessageCallback = function(err, message) {
+		if (err)
+			console.log(err);
+		else 
+			console.log(message);
+	};
 	
 	app.get('/api/users/auth', function(req, res) {
 		//console.log(req.query.locationId);
@@ -93,12 +107,24 @@
 															var hours = range.split('-');
 															if (hourNum >= parseInt(hours[0]) && hourNum <= parseInt(hours[1])) {
 																hasAccess = true;
+																var message = new LogMessage({
+																	message: 'User ' + found.memberName + ' accessed ' + location.locationName,
+																	isFailed: false,
+																	timestamp: new Date()
+																});
+																LogMessage.create(message, logMessageCallback);
 																break;
 															}
 														} else {
 															//console.log("it's a number");
 															if (hourNum == parseInt(range)) {
 																hasAccess = true;
+																var message = new LogMessage({
+																	message: 'User ' + found.memberName + ' accessed ' + location.locationName,
+																	isFailed: false,
+																	timestamp: new Date()
+																});
+																LogMessage.create(message, logMessageCallback);
 																break;
 															}
 														}
@@ -114,7 +140,18 @@
 						}
 						res.send(hasAccess);
 					} else {
-						console.log('unauthorized access attempt by inactive user: ' + found.memberName + ' at location: ' + req.query.locationId);
+						Location.findOne({locationId: req.query.locationId}, function(err, location) {
+							var message = new LogMessage({
+								isFailed: true,
+								timestamp: new Date()
+							});
+							if (location) {
+								message.message = 'Unauthorized access attempt by inactive user: ' + found.memberName + ' at location: ' + location.locationName;
+							} else {
+								message.message = 'Unauthorized access attempt by inactive user: ' + found.memberName + ' at location: ' + req.query.locationId;
+							}
+							LogMessage.create(message, logMessageCallback);
+						});
 						res.send(false);
 					}
 				} else {
@@ -123,11 +160,23 @@
 							if (err) {
 								console.log(err);
 							}
-							if (user != null) {
-								console.log('unauthorized access attempt by ' + user.memberName + ' at location: ' + req.query.locationId);
-							} else {
-								console.log('access attempted with card number ' + req.query.cardNumber + ' by unknown user');
-							}
+							var message = new LogMessage({
+								isFailed: true,
+								timestamp: new Date()
+							});
+							Location.findOne({locationId: req.query.locationId}, function(err, location) {
+								if (location) {
+									locationString = location.locationName;
+								} else {
+									locationString = req.query.locationId;
+								}
+								if (user != null) {
+									message.message = 'Unauthorized access attempt by ' + user.memberName + ' at location: ' + locationString;
+								} else {
+									message.message = 'Access attempted with card number ' + req.query.cardNumber + ' by unknown user';
+								}
+								LogMessage.create(message, logMessageCallback);
+							});
 						});
 					res.send(false);			
 				}
