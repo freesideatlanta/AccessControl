@@ -1,36 +1,40 @@
 <form>
 	<div class="modal-header">
-		<button type="button" class="close" aria-label="Close" ng-click="cancelUserModal()"><span aria-hidden="true">&times;</span></button>
+		<button type="button" class="close" aria-label="Close" ng-click="cancelUserModal()"><span aria-hidden="true"><i class="glyphicon glyphicon-remove"></i></span></button>
 		<h4 class="modal-title">User</h4>
 	</div>
 	<div class="modal-body">
-		<div class="row form-group">
+		<div class="form-group">
 			<input type="text" class="form-control" placeholder="Name" ng-model="user.memberName"/>
 		</div>
-		<div class="row form-group">
+		<div class="form-group">
 			<input type="text" class="form-control" placeholder="Card Number" ng-model="user.cardNumber"/>
 		</div>
-		<div class="row form-group">
+		<div class="form-group">
 			<label for="active">Active</label> &nbsp;<input type="checkbox" name="active" class="" ng-model="user.active"/>
 		</div>
-		<div class="row form-group">
+		<div class="form-group">
 			<label for="active">Access</label>
-			<div>		
-				<div class="col-md-6 panel panel-default">
-					<div class="panel-heading">Allowed</div>
-					<div class="panel-body" id="allowedList" data-drop="true" jqyoui-droppable ng-model="user.allowedLocations">
-						<div class="btn btn-default col-md-12" ng-repeat="location in user.allowedLocations track by $index" data-drag="true" jqyoui-draggable="{index: {{$index}}}" ng-model="user.allowedLocations">{{location.locationName}}</div>
+			<div>
+				<div class="col-md-6">
+					<div class="panel panel-default">
+						<div class="panel-heading">Allowed</div>
+						<div class="panel-body" id="allowedList" data-drop="true" jqyoui-droppable ng-model="user.allowedLocations">
+							<div class="btn btn-default col-md-12" ng-repeat="location in user.allowedLocations track by $index" data-drag="true" jqyoui-draggable="{index: {{$index}}}" ng-model="user.allowedLocations">{{location.locationName}}</div>
+						</div>
 					</div>
 				</div>
-				<div class="col-md-6 panel panel-default">
-					<div class="panel-heading">Disallowed</div>
-					<div class="panel-body" id="disallowedList" data-drop="true" jqyoui-droppable ng-model="user.disallowedLocations">
-						<div class="btn btn-default col-md-12" ng-repeat="location in user.disallowedLocations track by $index" data-drag="true" jqyoui-draggable="{index: {{$index}}}" ng-model="user.disallowedLocations">{{location.locationName}}</div><br>
+				<div class="col-md-6">
+					<div class="panel panel-default">
+						<div class="panel-heading">Disallowed</div>
+						<div class="panel-body" id="disallowedList" data-drop="true" jqyoui-droppable ng-model="user.disallowedLocations">
+							<div class="btn btn-default col-md-12" ng-repeat="location in user.disallowedLocations track by $index" data-drag="true" jqyoui-draggable="{index: {{$index}}}" ng-model="user.disallowedLocations">{{location.locationName}}</div><br>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-		<div class="row form-group">
+		<div class="form-group" style="clear:both">
 			<button type="submit" class="btn btn-success" ng-click="saveUser()">Save</button>&nbsp;<button type="button" class="btn btn-danger" ng-click="cancelUserModal()">Cancel</button>
 		</div>
 	</div>

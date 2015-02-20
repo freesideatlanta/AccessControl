@@ -1,16 +1,16 @@
 <form>
 	<div class="modal-header">
-		<button type="button" class="close" aria-label="Close" ng-click="cancelLocationModal()"><span aria-hidden="true">&times;</span></button>
+		<button type="button" class="close" aria-label="Close" ng-click="cancelLocationModal()"><span aria-hidden="true"><i class="glyphicon glyphicon-remove"></i></span></button>
 		<h4 class="modal-title">Location</h4>
 	</div>
 	<div class="modal-body">
-		<div class="row form-group">
+		<div class="form-group">
 			<input type="text" class="form-control" placeholder="Location Id" ng-model="location.locationId"/>
 		</div>
-		<div class="row form-group">
+		<div class="form-group">
 			<input type="text" class="form-control" placeholder="Location Name" ng-model="location.locationName"/>
 		</div>
-		<div class="row form-group">
+		<div class="form-group">
 			<button type="button" class="btn btn-success" ng-click="saveLocation()">Save</button>&nbsp;<button type="button" class="btn btn-danger" ng-click="cancelLocationModal()">Cancel</button>
 		</div>
 	</div>

@@ -1,4 +1,7 @@
 <div class="col-md-12">
+	<p>
+		This screen allows you to edit a member including granting/revoking access rights to particular locations.
+	</p>
 	<table class="table table-striped" style="border: 1px solid #999;">
 		<tr>
 			<th>Member Name</th>
@@ -7,10 +10,13 @@
 			<td></td>
 		</tr>
 		<tr ng-repeat="user in users">
-			<td>{{user.memberName}}:{{user._id}}</td>
+			<td>{{user.memberName}}</td>
 			<td>{{user.cardNumber}}</td>
-			<td>{{user.active}}</td>
-			<td><button class="btn btn-default" ng-click="loadUser(user)">Edit</button>&nbsp;<button class="btn btn-danger btn-small" ng-click="removeUser(user._id)">&times;</button></td>
+			<td>
+				<i class="glyphicon glyphicon-ok text-success" ng-show="user.active">&nbsp;</i>
+				<i class="glyphicon glyphicon-remove text-danger" ng-show="!user.active">&nbsp;</i>
+			</td>
+			<td><button class="btn btn-primary" ng-click="loadUser(user)">Edit</button>&nbsp;<button class="btn btn-danger btn-small" ng-click="removeUser(user._id)"><i class="glyphicon glyphicon-remove"></i></button></td>
 		</tr>
 		<tr>
 			<td colspan="3"><button class="btn btn-success" ng-click="addUser()"><i class="glyphicon glyphicon-plus"></i>&nbsp;Add User</button></td>
