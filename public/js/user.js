@@ -9,18 +9,15 @@ angular.module('app.user.controllers', [])
 			});
 			locationService.getLocations().then(function(data) {
 				$scope.locations = data.data;
-				console.log($scope.locations);
 			});
 		};
 		
 		$scope.init();
 			
 		$scope.saveUser = function(user) {
-			console.log(user);
 			$http.post('/api/users', user)
 				.success(function(data) {
 					$scope.users = data;
-					console.log(data);
 				})
 				.error(function(data) {
 					console.log('Error: ' + data);
@@ -37,16 +34,11 @@ angular.module('app.user.controllers', [])
 				});
 		}
 		
-		
-		
 		$scope.addUser = function() {
-			console.log("adding user");
-			
 			$scope.loadUser(new User());
 		};
 		
 		$scope.loadUser = function(user) {
-			console.log(user);
 			if (!user.allowedLocations) {
 				user.allowedLocations = [];
 			}
@@ -94,7 +86,6 @@ angular.module('app.user.controllers', [])
 		}
 
 		$scope.cancelUserModal = function() {
-			console.log("cancelled");
 			$scope.user = {};
 			$modalInstance.dismiss('close')
 		}
@@ -118,10 +109,7 @@ angular.module('app.user.controllers', [])
 		
 		$scope.clearAccessList = function(event) {
 			var index = eval('(' + event.toElement.attributes['jqyoui-draggable'].value + ')').index;
-			console.log(index);
-			console.log(user.disallowedLocations[index].days);
 			user.disallowedLocations[index].days = null;
-			console.log(user.disallowedLocations[index].days);
 		}
 	})
 	.controller('timeModalController', function($scope, $modalInstance, location, user) {
@@ -129,7 +117,6 @@ angular.module('app.user.controllers', [])
 		$scope.init = function() {
 			
 			$scope.locationName = location.locationName;
-			console.log(location.days);
 			if (location.days == null || location.days.length == 0) {
 				var sun = new LocationAccess('Sunday');
 				var mon = new LocationAccess('Monday');
@@ -152,10 +139,6 @@ angular.module('app.user.controllers', [])
 		
 		$scope.cancelTimeModal = function() {
 			$modalInstance.dismiss('cancel');
-		}
-		
-		$scope.saveTimes = function() {
-			console.log(location.days);
 		}
 	});
 

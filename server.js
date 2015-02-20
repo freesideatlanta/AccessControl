@@ -2,6 +2,7 @@
 
     // set up ========================
     var express  = require('express');
+	require('date-utils');
     var app      = express();                               // create our app w/ express
     var mongoose = require('mongoose'), Schema = mongoose.Schema;                     // mongoose for mongodb
     var morgan = require('morgan');             // log requests to the console (express4)
@@ -55,22 +56,70 @@
     });
 	
 	app.get('/api/users/auth', function(req, res) {
-		console.log(req.query.locationId);
-		console.log(req.query.cardNumber);
-		User.findOne({'cardNumber':req.query.cardNumber}, function(err, found) {
-			if (err)
-				res.send(err);
-			if (found != null) {
-				console.log("logging: " + found)
-				if (found.active) {
-					res.send(true);
+		//console.log(req.query.locationId);
+		//console.log(req.query.cardNumber);
+		User.findOne({}).where('cardNumber').equals(req.query.cardNumber).and('allowedLocations').elemMatch({locationId: req.query.locationId})
+			.exec(function(err, found) {
+				if (err)
+					res.send(err);
+				if (found != null) {
+					//console.log("logging: " + found)
+					if (found.active) {
+						var hasAccess = false;
+						if (found.allowedLocations) {
+							for (var i = 0; i < found.allowedLocations.length; i++) {
+								var location = found.allowedLocations[i];
+								if (location.locationId == req.query.locationId) {
+									console.log("they've got the location, checking hourly access");
+									var now = new Date();
+									console.log(now);
+									var dayString = now.toFormat('DDDD');
+									var hour = now.toFormat('HH24');
+									for (var d = 0; d < location.days.length; d++) {
+										var day = location.days[d];
+										if (dayString == day.dayName) {
+											if (day.cronString != '') {
+												if (day.cronString == '*') {
+													hasAccess = true;
+												} else {
+													//figure out how to parse out the string here
+													//the hour will be zero padded so coerce it to a number
+													var hourNum = parseInt(hour);
+													var ranges = day.cronString.split(',');
+													for (var t = 0; t < ranges.length; t++) {
+														var range = ranges[t];
+														if (range.indexOf('-') >= 0) {
+															//console.log("it's a time range");
+															var hours = range.split('-');
+															if (hourNum >= parseInt(hours[0]) && hourNum <= parseInt(hours[1])) {
+																hasAccess = true;
+																break;
+															}
+														} else {
+															//console.log("it's a number");
+															if (hourNum == parseInt(range)) {
+																hasAccess = true;
+																break;
+															}
+														}
+													}
+												}
+											}
+											break;
+										}
+									}
+									break;
+								}
+							};
+						}
+						res.send(hasAccess);
+					} else {
+						res.send(false);
+					}
 				} else {
-					res.send(false);
+					res.send(false);			
 				}
-			} else {
-				res.send(false);			
-			}
-		});
+			});
 	});
 	
 	//get all locations
