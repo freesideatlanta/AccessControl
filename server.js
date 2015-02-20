@@ -70,9 +70,9 @@
 							for (var i = 0; i < found.allowedLocations.length; i++) {
 								var location = found.allowedLocations[i];
 								if (location.locationId == req.query.locationId) {
-									console.log("they've got the location, checking hourly access");
+									//console.log("they've got the location, checking hourly access");
 									var now = new Date();
-									console.log(now);
+									//console.log(now);
 									var dayString = now.toFormat('DDDD');
 									var hour = now.toFormat('HH24');
 									for (var d = 0; d < location.days.length; d++) {
@@ -114,9 +114,21 @@
 						}
 						res.send(hasAccess);
 					} else {
+						console.log('unauthorized access attempt by inactive user: ' + found.memberName + ' at location: ' + req.query.locationId);
 						res.send(false);
 					}
 				} else {
+					User.findOne({}).where('cardNumber').equals(req.query.cardNumber)
+						.exec(function(err, user) {
+							if (err) {
+								console.log(err);
+							}
+							if (user != null) {
+								console.log('unauthorized access attempt by ' + user.memberName + ' at location: ' + req.query.locationId);
+							} else {
+								console.log('access attempted with card number ' + req.query.cardNumber + ' by unknown user');
+							}
+						});
 					res.send(false);			
 				}
 			});
