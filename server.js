@@ -107,24 +107,12 @@
 															var hours = range.split('-');
 															if (hourNum >= parseInt(hours[0]) && hourNum <= parseInt(hours[1])) {
 																hasAccess = true;
-																var message = new LogMessage({
-																	message: 'User ' + found.memberName + ' accessed ' + location.locationName,
-																	isFailed: false,
-																	timestamp: new Date()
-																});
-																LogMessage.create(message, logMessageCallback);
 																break;
 															}
 														} else {
 															//console.log("it's a number");
 															if (hourNum == parseInt(range)) {
 																hasAccess = true;
-																var message = new LogMessage({
-																	message: 'User ' + found.memberName + ' accessed ' + location.locationName,
-																	isFailed: false,
-																	timestamp: new Date()
-																});
-																LogMessage.create(message, logMessageCallback);
 																break;
 															}
 														}
@@ -138,18 +126,35 @@
 								}
 							};
 						}
-						res.send(hasAccess);
-					} else {
-						Location.findOne({locationId: req.query.locationId}, function(err, location) {
+						if (!hasAccess) {
 							var message = new LogMessage({
+								message: 'User ' + found.memberName + ' attempted access to ' + location.locationName,
 								isFailed: true,
 								timestamp: new Date()
 							});
+							LogMessage.create(message, logMessageCallback);
+						} else {
+							var message = new LogMessage({
+								message: 'User ' + found.memberName + ' accessed ' + location.locationName,
+								isFailed: false,
+								timestamp: new Date()
+							});
+							LogMessage.create(message, logMessageCallback);
+						}
+						res.send(hasAccess);
+					} else {
+						Location.findOne({locationId: req.query.locationId}, function(err, location) {
+							var locationString = '';
 							if (location) {
-								message.message = 'Unauthorized access attempt by inactive user: ' + found.memberName + ' at location: ' + location.locationName;
+								locationString = location.locationName;
 							} else {
-								message.message = 'Unauthorized access attempt by inactive user: ' + found.memberName + ' at location: ' + req.query.locationId;
+								locationString = location.locationId;
 							}
+							var message = new LogMessage({
+								message: 'Unauthorized access attempt by inactive user: ' + found.memberName + ' at location: ' + locationString,
+								isFailed: true,
+								timestamp: new Date()
+							});
 							LogMessage.create(message, logMessageCallback);
 						});
 						res.send(false);
@@ -319,6 +324,16 @@
             });
         });
     });
+	
+	app.get('/api/logging', function(req, res) {
+		LogMessage.find(function(err, logMessages) {
+			if (err) {
+				console.log("error retrieving log messages");
+				res.send('');
+			}
+			res.json(logMessages);
+		});
+	});
 
 // application -------------------------------------------------------------
 
