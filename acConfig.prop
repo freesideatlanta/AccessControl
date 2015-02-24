@@ -1,0 +1,4 @@
+numberOfRetries=2
+serverIp=10.1.10.99
+path=/api/users/auth
+port=8080
